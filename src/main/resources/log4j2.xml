@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="INFO" packages="org.erc.log4j2.layout">
     <properties>
-        <property name="name">SiteFetcher</property>
+        <property name="name">Crawler</property>
         <property name="pattern">%d{yyyy-MM-dd HH:mm:ss.SSS} | %-5.5p | %-10.10t | %-20.20C:%-5.5L | %msg%n</property>
-        <property name="logdir">c:\SiteFetcher\log\</property>
+        <property name="logdir">c:\Crawler\log\</property>
         <!--
         It will look like that:
         2013-04-03 07:37:51.993 | WARN  | main       | lnetgateway.Server:56    | My app is logging stuff

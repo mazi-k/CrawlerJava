@@ -1,4 +1,4 @@
-package mgtu.SiteFetcher;
+package crawler;
 
 public class Article {
     private String title;

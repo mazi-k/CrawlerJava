@@ -1,4 +1,4 @@
-package mgtu.SiteFetcher;
+package crawler;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;

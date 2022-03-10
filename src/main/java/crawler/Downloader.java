@@ -1,4 +1,4 @@
-package mgtu.SiteFetcher;
+package crawler;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.CookieStore;
