@@ -1,4 +1,4 @@
-package crawler;
+package crawler.core;
 
 public class Article {
     private String title;
