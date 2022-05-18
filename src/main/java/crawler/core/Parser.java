@@ -139,9 +139,9 @@ public class Parser implements Runnable{
             text.append(content.child(i).text());
         }
 
+        log.debug(title);
         log.debug(text.toString());
         log.debug(author);
-        log.debug(dateTime);
 
         return new Article(title, url, author, dateTime, text.toString());
     }

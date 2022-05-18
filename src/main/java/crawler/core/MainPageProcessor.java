@@ -124,9 +124,6 @@ public class MainPageProcessor extends Thread{
                         routingKeyToDownload,
                         MessageProperties.PERSISTENT_TEXT_PLAIN, messageBodyBytes);
 
-//                Article article = new Article(title, url, data.get(1), data.get(2), data.get(0));
-//                articles.add(article);
-
             } catch (Exception e) {
                 log.error(e);
             }
