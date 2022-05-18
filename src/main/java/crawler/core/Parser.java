@@ -1,5 +1,6 @@
 package crawler.core;
 
+import com.alibaba.fastjson.JSON;
 import com.rabbitmq.client.Channel;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.CookieStore;
@@ -9,12 +10,20 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.*;
+
 import org.apache.logging.log4j.Logger;
 
 public class Parser implements Runnable{
@@ -27,16 +36,19 @@ public class Parser implements Runnable{
     private final ArrayList<Article> articles = new ArrayList<Article>();
 
     private Channel channel;
-    String exchangeName;
-    String routingKey_dwnl;
+    private String exchangeName;
+    private String routingKeyToDownload;
+
+    private PreBuiltTransportClient elasticSearchClient;
     private String message;
     private long tag;
 
-    public Parser(Channel channel, String exchangeName, String routingKey_dwnl,
+    public Parser(Channel channel, PreBuiltTransportClient elasticSearchClient, String exchangeName, String routingKeyToDownload,
                   String message, long tag) {
         this.channel = channel;
+        this.elasticSearchClient = elasticSearchClient;
         this.exchangeName = exchangeName;
-        this.routingKey_dwnl = routingKey_dwnl;
+        this.routingKeyToDownload = routingKeyToDownload;
         this.message = message;
         this.tag = tag;
         CookieStore httpCookieStore = new BasicCookieStore();
@@ -109,7 +121,7 @@ public class Parser implements Runnable{
         return doc;
     }
 
-    private Article parsePage(String url) {
+    private void parsePage(String url) {
         Document page = getDocumentByUrl(url);
 
         String title = page.title();
@@ -143,10 +155,71 @@ public class Parser implements Runnable{
         log.debug(text.toString());
         log.debug(author);
 
-        return new Article(title, url, author, dateTime, text.toString());
+        pushSomeData(new Article(title, url, author, dateTime, text.toString()));
     }
 
-@Override
+    void pushSomeData(Article article){
+//        String json = "{" +
+//                "\"user\":\"kimchy\"," +
+//                "\"postDate\":\"2013-01-30\"," +
+//                "\"message\":\"trying out Elasticsearch\"" +
+//                "}";
+        Map<String, Object> articleMap = new HashMap<String, Object>();
+        articleMap.put("url", article.getUrl());
+        articleMap.put("title", article.getTitle());
+        articleMap.put("dateTime", article.getDateTime());
+        articleMap.put("author", article.getAuthor());
+        articleMap.put("content", article.getContent());
+        String temp_json = JSON.toJSONString(articleMap);
+        IndexResponse response = elasticSearchClient.prepareIndex("site_logs", "page")
+                .setSource(temp_json, XContentType.JSON)
+                .get();
+    }
+
+    void getSomeDataAll() {
+        QueryBuilder query = QueryBuilders.matchAllQuery();
+        SearchResponse response = elasticSearchClient.prepareSearch("site_logs").setQuery(query).get();
+
+        Iterator<SearchHit> sHits = response.getHits().iterator();
+        List<String> results = new ArrayList<String>(20); //some hack! initial size of array!
+        while (sHits.hasNext()) {
+            results.add(sHits.next().getSourceAsString());
+            //jackson
+
+        }
+        for (String it : results){
+            System.out.println(it);
+        }
+        log.info(response.getHits().getTotalHits());
+    }
+
+    void getSomeData() {
+        QueryBuilder query = QueryBuilders.matchQuery("date", "21.03.2022");
+
+        SearchResponse response = elasticSearchClient.prepareSearch("site_logs").setQuery(query).get();
+        System.out.println(response.getHits().getTotalHits());
+    }
+
+    void getSomeDataList(String field_name, String value) {
+        QueryBuilder query = QueryBuilders.matchQuery(field_name, value);
+        SearchResponse response = elasticSearchClient.prepareSearch("site_logs").setQuery(query).get();
+
+        Iterator<SearchHit> sHits = response.getHits().iterator();
+        List<String> results = new ArrayList<String>(20); //some hack! initial size of array!
+        while (sHits.hasNext()) {
+            results.add(sHits.next().getSourceAsString());
+            //jackson
+
+        }
+        for (String it : results){
+            System.out.println(it);
+        }
+
+        System.out.println(response.getHits().getTotalHits());
+    }
+
+
+    @Override
     public void run() {
         parsePage(message);
     }
