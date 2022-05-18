@@ -13,7 +13,7 @@ import java.util.concurrent.TimeoutException;
 
 public class RabbitInteract extends Thread {
 
-    String exchangeName = "exchangeNameThread";
+    String exchangeName = "exchangeName";
     String queueNameDownload = "queueNameDownload";
     String routingKeyToDownload = "routingKeyToDownload";
     int threadCount = 3;
