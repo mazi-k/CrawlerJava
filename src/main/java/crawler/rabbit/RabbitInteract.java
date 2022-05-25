@@ -55,7 +55,7 @@ public class RabbitInteract extends Thread {
         }
 
 
-        CreateIndexRequest indexRequest = new CreateIndexRequest("site_logs");
+        CreateIndexRequest indexRequest = new CreateIndexRequest("womhit_logs");
         indexRequest.settings(Settings.builder()
                 .put("index.number_of_shards", 1)
                 .put("index.number_of_replicas", 1)

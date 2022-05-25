@@ -159,11 +159,6 @@ public class Parser implements Runnable{
     }
 
     void pushSomeData(Article article){
-//        String json = "{" +
-//                "\"user\":\"kimchy\"," +
-//                "\"postDate\":\"2013-01-30\"," +
-//                "\"message\":\"trying out Elasticsearch\"" +
-//                "}";
         Map<String, Object> articleMap = new HashMap<String, Object>();
         articleMap.put("url", article.getUrl());
         articleMap.put("title", article.getTitle());
@@ -171,21 +166,19 @@ public class Parser implements Runnable{
         articleMap.put("author", article.getAuthor());
         articleMap.put("content", article.getContent());
         String temp_json = JSON.toJSONString(articleMap);
-        IndexResponse response = elasticSearchClient.prepareIndex("site_logs", "page")
+        IndexResponse response = elasticSearchClient.prepareIndex("womhit_logs", "page")
                 .setSource(temp_json, XContentType.JSON)
                 .get();
     }
 
     void getSomeDataAll() {
         QueryBuilder query = QueryBuilders.matchAllQuery();
-        SearchResponse response = elasticSearchClient.prepareSearch("site_logs").setQuery(query).get();
+        SearchResponse response = elasticSearchClient.prepareSearch("womhit_logs").setQuery(query).get();
 
         Iterator<SearchHit> sHits = response.getHits().iterator();
-        List<String> results = new ArrayList<String>(20); //some hack! initial size of array!
+        List<String> results = new ArrayList<String>(20);
         while (sHits.hasNext()) {
             results.add(sHits.next().getSourceAsString());
-            //jackson
-
         }
         for (String it : results){
             System.out.println(it);
@@ -196,13 +189,13 @@ public class Parser implements Runnable{
     void getSomeData() {
         QueryBuilder query = QueryBuilders.matchQuery("date", "21.03.2022");
 
-        SearchResponse response = elasticSearchClient.prepareSearch("site_logs").setQuery(query).get();
+        SearchResponse response = elasticSearchClient.prepareSearch("womhit_logs").setQuery(query).get();
         System.out.println(response.getHits().getTotalHits());
     }
 
     void getSomeDataList(String field_name, String value) {
         QueryBuilder query = QueryBuilders.matchQuery(field_name, value);
-        SearchResponse response = elasticSearchClient.prepareSearch("site_logs").setQuery(query).get();
+        SearchResponse response = elasticSearchClient.prepareSearch("womhit_logs").setQuery(query).get();
 
         Iterator<SearchHit> sHits = response.getHits().iterator();
         List<String> results = new ArrayList<String>(20); //some hack! initial size of array!
